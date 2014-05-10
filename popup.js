@@ -47,10 +47,17 @@ function tbAddOneCombination2Cart_New (argument) {
 	});
 }
 
+
+/*
+ * we first try to load URLs from localStorage, which is saved/updated in options page;
+ * if that is not available, then try to import html text input
+ *
+ */
 var urls_text = "";
 var urls_array = new Array();
 var cur_idx = 0;
-var default_url = "http://detail.1688.com/offer/38673134735.html";
+//var default_url = "http://detail.1688.com/offer/38673134735.html";
+var default_url = "http://gxchen.net";
 
 /* test urls:
 http://detail.1688.com/offer/38335009518.html
@@ -58,11 +65,55 @@ http://detail.1688.com/offer/38745908918.html
 http://detail.1688.com/offer/38747780081.html
 */
 
-function getNextUrl (idx) {
-	if (urls_text == "") {
-		urls_text = document.getElementById('item-urls').value;
+function string2Array (str, delimiter) {
+	console.log('before conv: ' + str);
+
+	if (!str) {
+		return null;
+	}
+
+	var _array = str.split(delimiter);
+	console.log("after conv: " + _array);
+
+	return _array;
+}
+
+var KEY_URLS_STRING = 'string-item-urls';
+function loadURLsFromLocalStorage (argument) {
+	var str_urls = localStorage[KEY_URLS_STRING];
+
+	if (!str_urls) {
+		console.log('no urls found. Pls add URLs in options page first');
+		urls_array[0] = default_url;
+	} else {
+		console.log('loadURLsFromLocalStorage() -->  str urls from localStorage: ' + str_urls);
+		urls_array = string2Array(str_urls, '\n');
+	}
+
+	return;
+}
+
+function importURLsFromTextInput (argument) {
+	// load url from tag textarea
+	urls_text = document.getElementById('item-urls').value;
+	if (!urls_text) {
+		urls_array[0] = default_url;
+	} else {
 		urls_array = urls_text.split('\n');
-		console.log("import all urls: " + urls_array);
+	}
+
+	console.log("import all urls: " + urls_array);
+	return;
+}
+
+function getNextURL () {
+
+	// if (urls_text == "") {
+	// 	importURLsFromTextInput();
+	// }
+
+	if (urls_array.length <= 0) {
+		loadURLsFromLocalStorage();
 	}
 
 	if (cur_idx >= urls_array.length) {
@@ -71,7 +122,7 @@ function getNextUrl (idx) {
 		return null;
 	}
 
-	var url = (urls_array[cur_idx] == '') ? default_url : urls_array[cur_idx];
+	var url = urls_array[cur_idx];
 	console.log("idx: " + cur_idx + ", url: " + url);
 	cur_idx++;
 
@@ -86,19 +137,22 @@ function openUrlInCurrentTab (url) {
 }
 
 function onOpenUrlBtnClicked (argument) {
-	var url = getNextUrl(0);
+	var url = getNextURL();
+	if (!url) {
+		return;
+	}
+
 	openUrlInCurrentTab(url);
 }
 
-function initialize(e) {
+function injectJsFile(e) {
 
-	console.log("in popup.js.....");
+	console.log("in injectJsFile()");
 
 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		console.log(tabs[0]);
 		document.getElementById('debug_window').innerHTML = "current url: " + tabs[0].url;
 	});
-
 
 	chrome.tabs.executeScript(null, {
 		file: "content_script.js"
@@ -149,7 +203,7 @@ function aliAddOneColor2Cart (ele) {
 
 function aliOneClick2Cart (ele) {
 	console.log("aliOneClick2Cart(), loop count: " + g_combination_nums);
-	//g_combination_nums = 2;
+	// g_combination_nums = 2;
 	for (var cnt = 0; cnt < g_combination_nums; cnt++) {
 		console.log("loop: " + cnt);
 		aliAddOneColor2Cart(null);
@@ -187,10 +241,10 @@ function load_item_page(url) {
 
 document.addEventListener('DOMContentLoaded', function () {
 	var btn_initialize = document.getElementById('btn_initialize');
-	btn_initialize.addEventListener('click', initialize);
+	btn_initialize.addEventListener('click', injectJsFile);
 
-	var btn_tb2cart = document.getElementById('btn_tb2cart');
-	btn_tb2cart.addEventListener('click', tbOneClick2Cart);
+	//var btn_tb2cart = document.getElementById('btn_tb2cart');
+	//btn_tb2cart.addEventListener('click', tbOneClick2Cart);
 
 	var btn_ali2cart = document.getElementById('btn_ali2cart');
 	btn_ali2cart.addEventListener('click', aliOneClick2Cart);

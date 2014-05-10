@@ -4,7 +4,13 @@
 	"name" : "super1click2cart",
 	"description" : "Easily add all combinations of different colors/sizes/etc to shopping cart, available for alibaba/taobao/tmall.",
 	"version" : "0.1",
-	//"icons": {"128":"icon-128.png"},
+	// "icons": {
+	// 	"16":  "icon.png",
+	// 	"48":  "icon-48.png",
+	// 	"128": "icon-128.png"
+	// },
+
+	"options_page": "options.html",
 
 	"permissions" : [
 		"tabs",

@@ -22,6 +22,22 @@ function sleep (sleepTime) {
 }
 
 /*
+ * min <= amount <= max &&
+ * amount % 10 == 0
+ *
+ */
+function randomAmount (min, max) {
+	var amount = 0;
+
+	amount = Math.random() * (max - min);
+
+	amount = Math.round(amount / 10);
+	amount *= 10;
+
+	return (amount + min);
+}
+
+/*
  * mainly decide how many size-numbers and color-numbers
  *
  */
@@ -134,10 +150,12 @@ function aliSelColor (argument) {
 function aliSelAmountForAllSizes (argument) {
 	var size_tbl = document.getElementsByClassName('mod-detail-purchasing-multiple')[0].getElementsByTagName('tbody')[0];
 	var size_tbl_len = size_tbl.getElementsByTagName('tr').length;
-	//size_tbl_len = 1;
+	// size_tbl_len = 1;
 
 	for (var idx = 0; idx < size_tbl_len; idx++) {
-		size_tbl.getElementsByClassName('amount-input')[idx].value = 39;
+		// seems we have to click "-/+" button for amount value to taking effect,
+		// so first set the value to `dest_amount -1`, then click the "+" button...
+		size_tbl.getElementsByClassName('amount-input')[idx].value = randomAmount(20, 100) - 1;
 		size_tbl.getElementsByClassName('amount-up')[idx].click();
 	}
 
