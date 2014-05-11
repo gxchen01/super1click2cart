@@ -72,6 +72,19 @@ function tbInitialize (argument) {
 	logd("tbInitialize(), X.");
 }
 
+// in some item pages, there is a "huopin" button,
+// we need to be aware of these pages and click the "huopin" button additionally.
+function aliIsLimitedPurchase () {
+	if (document.getElementsByClassName('do-limited').length > 0) {
+		if (document.getElementsByClassName('do-limited')[0].innerHTML == "入伙拼单") {
+			logd("item in huopin status!!");
+			return true;
+		}
+	}
+
+	return false;
+}
+
 function aliInitialize (argument) {
 	logd("aliInitialize(), E.");
 
@@ -81,6 +94,11 @@ function aliInitialize (argument) {
 
 	// g_size_nums is not used in alibaba
 	g_size_nums = 1;
+
+	if (aliIsLimitedPurchase()) {
+		logd("item in huopin status, click the 'huopin' button to popup the purchasing form");
+		document.getElementsByClassName('do-limited')[0].click();
+	}
 
 	logd("sending message to extension..");
 	chrome.extension.sendRequest({color_nums: g_color_nums, size_nums: g_size_nums}, function (response) {
@@ -115,6 +133,10 @@ function tbSelSize (argument) {
 }
 
 function tbSelColor (argument) {
+	if (g_color_nums == 0) {
+		// no color options availabe, we needn't choose any color.
+		return;
+	}
 	document.getElementById('J_isku').getElementsByTagName('ul')[1].getElementsByTagName('a')[g_color_idx].click()
 }
 

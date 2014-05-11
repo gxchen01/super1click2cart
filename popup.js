@@ -261,6 +261,11 @@ chrome.extension.onRequest.addListener(function (request, sender, sendResponse) 
 
 	console.log("total_size_nums: " + request.size_nums + ", total_color_nums: " + request.color_nums);
 
+	if (request.color_nums == 0) {
+		// if color_nums == 0, we still treat it as color_nums == 1
+		// other wise, nothing will be executed..
+		request.color_nums = 1;
+	}
 	g_combination_nums = request.size_nums * request.color_nums;
 
 	sendResponse({ret_code: "success"});
