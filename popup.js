@@ -123,7 +123,7 @@ function getNextURL () {
 	}
 
 	var url = urls_array[cur_idx];
-	console.log("idx: " + cur_idx + ", url: " + url);
+	console.log("getNextURL(). idx: " + cur_idx + ", url: " + url);
 	cur_idx++;
 
 	return url;
@@ -131,7 +131,12 @@ function getNextURL () {
 
 function openUrlInCurrentTab (url) {
 	//chrome.tabs.create({url: "http://www.taobao.com/"});
-	chrome.tabs.update({url: url});
+
+	if (url != null && url != "") {
+		console.log("opening url in current tab: " + url);
+		chrome.tabs.update({url: url});
+	}
+
 
 	// TO-DO: we should make sure page is fully loaded before any further process.
 }
@@ -145,9 +150,121 @@ function onOpenUrlBtnClicked (argument) {
 	openUrlInCurrentTab(url);
 }
 
+function isUrlValid(url) {
+	return true;
+}
+
+var g_next_url_idx = 0;
+function handleNextURL_stage1 (url) {
+	console.log("handleNextURL_stage1(), E.");
+
+	while (g_next_url_idx < urls_array.length) {
+		if (isUrlValid(urls_array[g_next_url_idx])) {
+			break;
+		}
+		g_next_url_idx++;
+	}
+
+	if (g_next_url_idx >= urls_array.length) {
+		console.log("done with all URLs");
+		alert("done with all URLs!!");
+		return;
+	}
+
+	var an_url = urls_array[g_next_url_idx];
+	console.log("handling " + g_next_url_idx + "th url: " + an_url);
+	g_next_url_idx++;
+
+	// 2.1 open url
+	openUrlInCurrentTab(an_url);
+
+	// 2.2 make sure page is fully loaded!
+	sleep(5000);
+
+	// 2.3 inject JS file: content_scripts.js
+	injectJsFile(null);
+
+	// following steps are executed in handleNextURL_stage2
+	console.log("calling handleNextURL_stage2() 2s later!!");
+	setTimeout(function () {
+		handleNextURL_stage2();
+	}, 2000);
+
+	console.log("handleNextURL_stage1(), X.");
+}
+
+function handleNextURL_stage2 (url) {
+	console.log("handleNextURL_stage2(), E.");
+
+	// 2.4 add all specs to cart
+	aliOneClick2Cart(null);
+	sleep(1000);
+
+	// 3 move on to next URL
+	console.log("calling handleNextURL_stage1() 1s later...")
+	setTimeout(function () {
+		handleNextURL_stage1();
+	}, 1000);
+
+	console.log("handleNextURL_stage2(), X.");
+}
+
+function onSuper1ClickBtnClicked (argument) {
+	console.log("onSuper1ClickBtnClicked(), E.");
+
+	// 1. load URLs from localStroage
+	loadURLsFromLocalStorage();
+
+	handleNextURL_stage1();
+
+	console.log("onSuper1ClickBtnClicked(), X.");
+}
+
+/*
+ * this is never gonna work, because js is single-threaded.
+ * in this way, there's no chance to excute callback function
+ * registered via "chrome.extension.onRequest.addListener(function () {})"
+ */
+function onSuper1ClickBtnClicked_legacy (argument) {
+	console.log("onSuper1ClickBtnClicked(), E.");
+
+	// 1. load URLs from localStroage
+	loadURLsFromLocalStorage();
+
+	// 2. handle every URL one by one
+	// better way: while (getNextURL() !== null) {};
+	for (var i = 0; i < urls_array.length; i++) {
+
+		// 2.1 open URL
+		var cur_url = urls_array[i];
+		console.log("processing " + i + "th url: " + cur_url);
+
+		if (!cur_url) {
+			continue;
+		}
+		openUrlInCurrentTab(cur_url);
+
+		// 2.2 make sure page is fully loaded!
+		sleep(5000);
+
+		// 2.3 inject JS file: content_scripts.js
+		injectJsFile(null);
+		sleep(500);
+
+		// 2.4 call aliOneClick2Cart(), to add all specs to cart
+		// we should not go to next step until receive message from content_script.js!!!!
+		// this is very important, due to single-thread model of javascripts...
+		aliOneClick2Cart(null);
+		sleep(1000);
+
+	};
+
+	console.log("onSuper1ClickBtnClicked(), X.");
+}
+
 function injectJsFile(e) {
 
-	console.log("in injectJsFile()");
+	console.log("injectJsFile() E.");
 
 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		console.log(tabs[0]);
@@ -159,6 +276,7 @@ function injectJsFile(e) {
 	});
 
 	//window.close();
+	console.log("injectJsFile() X.");
 }
 
 function tbOneClick2Cart (ele) {
@@ -240,6 +358,10 @@ function load_item_page(url) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+
+	var btn_super1click = document.getElementById('btn-super1click');
+	btn_super1click.addEventListener('click', onSuper1ClickBtnClicked);
+
 	var btn_initialize = document.getElementById('btn_initialize');
 	btn_initialize.addEventListener('click', injectJsFile);
 
@@ -270,3 +392,7 @@ chrome.extension.onRequest.addListener(function (request, sender, sendResponse) 
 
 	sendResponse({ret_code: "success"});
 });
+
+// chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+// 	console.log("tab url updated.....");
+// });
