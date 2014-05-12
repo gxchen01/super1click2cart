@@ -133,10 +133,6 @@ function tbSelSize (argument) {
 }
 
 function tbSelColor (argument) {
-	if (g_color_nums == 0) {
-		// no color options availabe, we needn't choose any color.
-		return;
-	}
 	document.getElementById('J_isku').getElementsByTagName('ul')[1].getElementsByTagName('a')[g_color_idx].click()
 }
 
@@ -166,6 +162,10 @@ function tbPrepareNextRun (argument) {
 
 // functions for alibaba
 function aliSelColor (argument) {
+	if (g_color_nums == 0) {
+		// no color options availabe, we needn't choose any color.
+		return;
+	}
 	document.getElementsByClassName('mod-detail-purchasing-multiple')[0].getElementsByClassName('unit-detail-spec-operator')[g_color_idx].getElementsByTagName('a')[0].click();
 }
 
