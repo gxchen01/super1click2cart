@@ -301,7 +301,7 @@ function aliAddOneColor2Cart (ele) {
 
 	// 2. sel amount for all sizes, for selected color
 	console.log("call aliSelAmountForAllSizes()");
-	chrome.tabs.executeScript(null, {code: "aliSelAmountForAllSizes();"});
+	chrome.tabs.executeScript(null, {code: "aliSelAmountForOneSize();"});
 	sleepRandom(1000, 500);
 
 	// 3. prepare for next run
@@ -321,7 +321,11 @@ function aliAddOneColor2Cart (ele) {
 
 function aliOneClick2Cart (ele) {
 	console.log("aliOneClick2Cart(), loop count: " + g_combination_nums);
-	// g_combination_nums = 2;
+	// we only handle the first color/size.
+	if (g_combination_nums > 1) {
+		g_combination_nums = 1;
+	}
+
 	for (var cnt = 0; cnt < g_combination_nums; cnt++) {
 		console.log("loop: " + cnt);
 		aliAddOneColor2Cart(null);

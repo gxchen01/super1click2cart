@@ -183,6 +183,11 @@ function aliSelAmountForAllSizes (argument) {
 
 }
 
+function aliSelAmountForOneSize (argument) {
+	document.getElementsByClassName('mod-detail-purchasing-multiple')[0].getElementsByTagName('tbody')[0].getElementsByClassName('amount-input')[0].value = randomAmount(20, 100) - 1;
+	document.getElementsByClassName('mod-detail-purchasing-multiple')[0].getElementsByTagName('tbody')[0].getElementsByClassName('amount-up')[0].click();
+}
+
 function aliPrepareNextRun (argument) {
 	g_color_idx += 1;
 	if (g_color_idx >= g_color_nums) {
